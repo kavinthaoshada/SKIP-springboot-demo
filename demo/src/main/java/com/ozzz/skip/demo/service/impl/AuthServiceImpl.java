@@ -30,7 +30,6 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public AuthResponse register(RegisterRequest request) {
 
-        // Check uniqueness
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new BusinessException("Username is already taken: " + request.getUsername());
         }
@@ -38,7 +37,6 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException("Email is already registered: " + request.getEmail());
         }
 
-        // Build and save the new user
         User user = User.builder()
                 .username(request.getUsername())
                 .email(request.getEmail())
@@ -52,7 +50,6 @@ public class AuthServiceImpl implements AuthService {
 
         userRepository.save(user);
 
-        // Generate JWT and return auth response
         String token = jwtUtils.generateTokenFromUsername(user.getUsername());
 
         return AuthResponse.builder()
@@ -67,7 +64,6 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthResponse login(LoginRequest request) {
 
-        // Spring Security handles credential validation
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getUsername(),
@@ -75,10 +71,8 @@ public class AuthServiceImpl implements AuthService {
                 )
         );
 
-        // Store authentication in security context
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        // Generate JWT
         String token = jwtUtils.generateTokenFromUsername(request.getUsername());
 
         User user = userRepository.findByUsername(request.getUsername())

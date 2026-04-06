@@ -26,8 +26,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException(
                         "User not found with username: " + username));
 
-        // Convert our Role enum into a Spring Security GrantedAuthority
-        // e.g. ROLE_BUYER becomes a SimpleGrantedAuthority
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
                 user.getPassword(),

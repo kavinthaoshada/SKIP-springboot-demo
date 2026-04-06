@@ -33,7 +33,6 @@ public class CategoryServiceImpl implements CategoryService {
                 .description(request.getDescription())
                 .build();
 
-        // Attach parent if provided
         if (request.getParentId() != null) {
             Category parent = categoryRepository.findById(request.getParentId())
                     .orElseThrow(() -> new ResourceNotFoundException("Category", "id", request.getParentId()));
@@ -80,7 +79,7 @@ public class CategoryServiceImpl implements CategoryService {
                     .orElseThrow(() -> new ResourceNotFoundException("Category", "id", request.getParentId()));
             category.setParent(parent);
         } else {
-            category.setParent(null); // promote to top-level
+            category.setParent(null);
         }
 
         return mapToResponse(categoryRepository.save(category));
@@ -99,7 +98,6 @@ public class CategoryServiceImpl implements CategoryService {
         categoryRepository.delete(category);
     }
 
-    // ── Mapper ─────────────────────────────────────────────────────────────
     private CategoryResponse mapToResponse(Category category) {
         return CategoryResponse.builder()
                 .id(category.getId())
