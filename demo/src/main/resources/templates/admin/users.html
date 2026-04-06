@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><title>Users</title></head>
+<body>
+
+<th:block th:replace="~{admin/layout ::
+    adminLayout(~{::title}, ~{::main})}">
+
+    <title>Users — Admin</title>
+
+    <main>
+        <div class="admin-page-header">
+            <div>
+                <h1>👥 Users</h1>
+                <p>Manage all registered users</p>
+            </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="admin-filter-bar">
+            <input type="text"
+                   id="userSearch"
+                   placeholder="Search by username or email..."
+                   style="flex:1; max-width:400px;"/>
+            <select id="roleFilter">
+                <option value="">All Roles</option>
+                <option value="BUYER">Buyers</option>
+                <option value="SELLER">Sellers</option>
+                <option value="ADMIN">Admins</option>
+            </select>
+        </div>
+
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h2>All Users
+                    <span class="text-muted"
+                          style="font-weight:400; font-size:0.9rem;"
+                          th:text="'(' + ${users.size()} + ' total)'">
+                </span>
+                </h2>
+            </div>
+            <div style="overflow-x:auto;">
+                <table class="admin-table" id="usersTable">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>User</th>
+                        <th>Role</th>
+                        <th>Phone</th>
+                        <th>Joined</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="user : ${users}">
+
+                        <td class="text-muted"
+                            th:text="${user.id}"></td>
+
+                        <td>
+                            <div style="display:flex;
+                                        align-items:center;
+                                        gap:0.7rem;">
+                                <div style="width:36px;height:36px;
+                                    border-radius:50%;
+                                    background:linear-gradient(
+                                        135deg,#e94560,#1a1a2e);
+                                    display:flex;align-items:center;
+                                    justify-content:center;
+                                    color:white;font-weight:700;
+                                    font-size:0.9rem;flex-shrink:0;"
+                                     th:text="${#strings.toUpperCase(
+                                        #strings.substring(
+                                            user.username,0,1))}">
+                                </div>
+                                <div>
+                                    <div style="font-weight:600;"
+                                         th:text="${user.username}">
+                                    </div>
+                                    <div class="text-muted"
+                                         style="font-size:0.8rem;"
+                                         th:text="${user.email}">
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td>
+                            <span class="badge badge-confirmed"
+                                  th:text="${user.role
+                                      .replace('ROLE_','')}">
+                            </span>
+                        </td>
+
+                        <td th:text="${user.phoneNumber != null
+                                    ? user.phoneNumber : '—'}">
+                        </td>
+
+                        <td th:text="${#temporals.format(
+                                       user.createdAt,
+                                       'MMM dd, yyyy')}">
+                        </td>
+
+                        <td>
+                            <span class="badge badge-active"
+                                  th:if="${user.active}">
+                                Active
+                            </span>
+                            <span class="badge badge-cancelled"
+                                  th:unless="${user.active}">
+                                Inactive
+                            </span>
+                        </td>
+
+                        <td>
+                            <form th:if="${user.active}"
+                                  th:action="@{/admin/users/{id}/deactivate(id=${user.id})}"
+                                  method="post"
+                                  style="display:inline;">
+                                <button type="submit"
+                                        class="btn btn-sm btn-danger"
+                                        data-confirm="Deactivate this user?">
+                                    Deactivate
+                                </button>
+                            </form>
+                            <span th:unless="${user.active}"
+                                  class="text-muted"
+                                  style="font-size:0.82rem;">
+                                Inactive
+                            </span>
+                        </td>
+
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</th:block>
+
+</body>
+</html>

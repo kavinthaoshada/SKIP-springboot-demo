@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Products — SkipShop</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}"/>
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main>
+    <div class="container">
+
+        <div th:replace="~{fragments/alerts :: alerts}"></div>
+
+        <!-- ── Page Header ───────────────────────────────────────── -->
+        <div class="section-header mt-3">
+            <h2 th:if="${keyword != null}">
+                Search results for "<span th:text="${keyword}"></span>"
+                <span class="text-muted" style="font-size:0.9rem; font-weight:400;"
+                      th:text="'(' + ${products.totalElements} + ' found)'"></span>
+            </h2>
+            <h2 th:unless="${keyword != null}">All Products</h2>
+            <a href="/products/new"
+               class="btn btn-primary btn-sm"
+               sec:authorize="hasAuthority('ROLE_SELLER')">
+                + List New Item
+            </a>
+        </div>
+
+        <div style="display:grid; grid-template-columns:260px 1fr; gap:2rem;">
+
+            <!-- ── Filter Sidebar ────────────────────────────────── -->
+            <aside>
+                <div style="background:white; border-radius:8px;
+                        padding:1.5rem;
+                        box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+
+                    <h3 style="font-size:1rem; font-weight:700;
+                           margin-bottom:1.2rem; color:#1a1a2e;">
+                        Filter Products
+                    </h3>
+
+                    <form action="/products" method="get" id="filterForm">
+
+                        <!-- Keyword -->
+                        <div class="form-group">
+                            <label>Keyword</label>
+                            <input type="text"
+                                   name="keyword"
+                                   class="form-control"
+                                   placeholder="Search..."
+                                   th:value="${keyword}"/>
+                        </div>
+
+                        <!-- Category -->
+                        <div class="form-group">
+                            <label>Category</label>
+                            <select name="categoryId" class="form-control">
+                                <option value="">All Categories</option>
+                                <option th:each="cat : ${categories}"
+                                        th:value="${cat.id}"
+                                        th:text="${cat.name}"
+                                        th:selected="${categoryId != null
+                                               and categoryId == cat.id}">
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- Price Range -->
+                        <div class="form-group">
+                            <label>Min Price ($)</label>
+                            <input type="number"
+                                   name="minPrice"
+                                   class="form-control"
+                                   placeholder="0"
+                                   step="0.01"
+                                   th:value="${minPrice}"/>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Max Price ($)</label>
+                            <input type="number"
+                                   name="maxPrice"
+                                   class="form-control"
+                                   placeholder="Any"
+                                   step="0.01"
+                                   th:value="${maxPrice}"/>
+                        </div>
+
+                        <button type="submit"
+                                class="btn btn-primary btn-block">
+                            Apply Filters
+                        </button>
+
+                        <a href="/products"
+                           class="btn btn-outline btn-block mt-1"
+                           style="display:block; text-align:center; margin-top:0.5rem;">
+                            Clear Filters
+                        </a>
+
+                    </form>
+                </div>
+            </aside>
+
+            <!-- ── Product Grid ───────────────────────────────────── -->
+            <div>
+
+                <!-- Empty state -->
+                <div class="empty-state"
+                     th:if="${products.content.isEmpty()}">
+                    <h3>No products found</h3>
+                    <p>Try adjusting your filters or
+                        <a href="/products" style="color:#e94560;">
+                            browse all products
+                        </a>
+                    </p>
+                </div>
+
+                <!-- Product cards -->
+                <div class="product-grid"
+                     th:unless="${products.content.isEmpty()}">
+                    <a th:each="product : ${products.content}"
+                       th:href="@{/products/{id}(id=${product.id})}"
+                       class="product-card">
+
+                        <div class="product-card-image">
+                            <img th:if="${product.imageUrl != null
+                                  and !product.imageUrl.isEmpty()}"
+                                 th:src="${product.imageUrl}"
+                                 th:alt="${product.name}"
+                                 onerror="this.parentElement.innerHTML='🛍️'"/>
+                            <span th:unless="${product.imageUrl != null
+                                       and !product.imageUrl.isEmpty()}">
+                            🛍️
+                        </span>
+                        </div>
+
+                        <div class="product-card-body">
+                            <div class="product-card-title"
+                                 th:text="${product.name}"></div>
+                            <div class="product-card-seller"
+                                 th:text="'by ' + ${product.sellerUsername}"></div>
+                            <div class="product-card-price"
+                                 th:text="'$' + ${#numbers.formatDecimal(
+                                 product.price, 1, 2)}">
+                            </div>
+                            <div class="product-card-stock"
+                                 th:text="${product.stockQuantity} + ' in stock'"
+                                 th:classappend="${product.stockQuantity == 0}
+                                 ? 'out'
+                                 : (${product.stockQuantity} < 5 ? 'low' : '')">
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- ── Pagination ──────────────────────────────────── -->
+                <div class="pagination"
+                     th:if="${products.totalPages > 1}">
+
+                    <!-- Previous -->
+                    <a th:if="${products.pageNumber > 0}"
+                       th:href="@{/products(page=${products.pageNumber - 1},
+                               size=${products.pageSize},
+                               keyword=${keyword},
+                               categoryId=${categoryId},
+                               minPrice=${minPrice},
+                               maxPrice=${maxPrice})}">
+                        ← Prev
+                    </a>
+
+                    <!-- Page numbers -->
+                    <th:block th:each="i : ${#numbers.sequence(
+                                       0, products.totalPages - 1)}">
+                        <a th:href="@{/products(page=${i},
+                                   size=${products.pageSize},
+                                   keyword=${keyword},
+                                   categoryId=${categoryId},
+                                   minPrice=${minPrice},
+                                   maxPrice=${maxPrice})}"
+                           th:text="${i + 1}"
+                           th:classappend="${i == products.pageNumber}
+                           ? 'active' : ''">
+                        </a>
+                    </th:block>
+
+                    <!-- Next -->
+                    <a th:if="${!products.lastPage}"
+                       th:href="@{/products(page=${products.pageNumber + 1},
+                               size=${products.pageSize},
+                               keyword=${keyword},
+                               categoryId=${categoryId},
+                               minPrice=${minPrice},
+                               maxPrice=${maxPrice})}">
+                        Next →
+                    </a>
+
+                </div>
+                <!-- End pagination -->
+
+            </div>
+            <!-- End product grid column -->
+
+        </div>
+        <!-- End grid layout -->
+
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

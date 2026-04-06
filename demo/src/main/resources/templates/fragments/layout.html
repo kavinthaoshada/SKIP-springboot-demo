@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<!-- ═══════════════════════════════════════════════════════════
+     MASTER LAYOUT FRAGMENT
+     Every page uses this as its outer shell via:
+       th:replace="~{fragments/layout :: layout(~{::title}, ~{::main})}"
+     ═══════════════════════════════════════════════════════════ -->
+<th:block th:fragment="layout(title, content)">
+    <!DOCTYPE html>
+    <html xmlns:th="http://www.thymeleaf.org"
+          xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+          lang="en">
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+        <!-- Favicon -->
+        <link rel="icon"
+              type="image/x-icon"
+              th:href="@{/favicon/favicon.ico}"/>
+        <link rel="icon"
+              type="image/png"
+              sizes="32x32"
+              th:href="@{/favicon/favicon-32x32.png}"/>
+        <link rel="icon"
+              type="image/png"
+              sizes="16x16"
+              th:href="@{/favicon/favicon-16x16.png}"/>
+        <link rel="apple-touch-icon"
+              sizes="180x180"
+              th:href="@{/favicon/apple-touch-icon.png}"/>
+
+        <!-- Page title passed in from each page -->
+        <title th:replace="${title}">SkipShop</title>
+
+        <!-- CSRF meta tag — used by JS for API calls -->
+        <meta name="_csrf"
+              th:content="${_csrf != null ? _csrf.token : ''}"/>
+        <meta name="_csrf_header"
+              th:content="${_csrf != null ? _csrf.headerName : ''}"/>
+
+        <!-- Global stylesheet -->
+        <link rel="stylesheet"
+              th:href="@{/css/main.css}"/>
+    </head>
+    <body>
+
+    <!-- Navbar fragment -->
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <!-- Main page content injected here -->
+    <main>
+        <div class="container">
+            <!-- Alerts fragment -->
+            <div th:replace="~{fragments/alerts :: alerts}"
+                 class="mt-2"></div>
+            <!-- Page-specific content -->
+            <th:block th:replace="${content}"></th:block>
+        </div>
+    </main>
+
+    <!-- Footer fragment -->
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <!-- Global scripts -->
+    <script th:src="@{/js/main.js}"></script>
+
+    </body>
+    </html>
+</th:block>
+
+</html>

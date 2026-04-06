@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <!-- Favicon -->
+    <link rel="icon"
+          type="image/x-icon"
+          th:href="@{/favicon/favicon.ico}"/>
+    <link rel="icon"
+          type="image/png"
+          sizes="32x32"
+          th:href="@{/favicon/favicon-32x32.png}"/>
+    <link rel="icon"
+          type="image/png"
+          sizes="16x16"
+          th:href="@{/favicon/favicon-16x16.png}"/>
+    <link rel="apple-touch-icon"
+          sizes="180x180"
+          th:href="@{/favicon/apple-touch-icon.png}"/>
+    
+    <title>SkipShop — Buy and Sell Anything</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}"/>
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main>
+    <div class="hero">
+        <h1>Buy and Sell <span>Anything</span></h1>
+        <p>Discover great deals from thousands of sellers</p>
+        <form class="hero-search" action="/products/search" method="get">
+            <input type="text" name="keyword"
+                   placeholder="Search for products..."/>
+            <button type="submit">Search</button>
+        </form>
+    </div>
+
+    <div class="container">
+        <div th:replace="~{fragments/alerts :: alerts}"></div>
+
+        <div class="section-header">
+            <h2>Featured Products</h2>
+            <a href="/products">View all →</a>
+        </div>
+
+        <!-- Product grid -->
+        <div class="product-grid">
+            <a th:each="product : ${featuredProducts}"
+               th:href="@{/products/{id}(id=${product.id})}"
+               class="product-card">
+                <div class="product-card-image">
+                    <img th:if="${product.imageUrl != null}"
+                         th:src="${product.imageUrl}"
+                         th:alt="${product.name}"
+                         onerror="this.parentElement.innerHTML='🛍️'"/>
+                    <span th:unless="${product.imageUrl != null}">🛍️</span>
+                </div>
+                <div class="product-card-body">
+                    <div class="product-card-title"
+                         th:text="${product.name}"></div>
+                    <div class="product-card-seller"
+                         th:text="'by ' + ${product.sellerUsername}"></div>
+                    <div class="product-card-price"
+                         th:text="'$' + ${product.price}"></div>
+                    <div class="product-card-stock"
+                         th:text="${product.stockQuantity} + ' in stock'"
+                         th:classappend="${product.stockQuantity < 5} ? 'low' : ''">
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Empty state -->
+        <div class="empty-state"
+             th:if="${featuredProducts == null or featuredProducts.isEmpty()}">
+            <h3>No products yet</h3>
+            <p>Check back soon!</p>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

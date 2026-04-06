@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="en">
+
+<th:block th:fragment="adminLayout(title, content)">
+    <!DOCTYPE html>
+    <html xmlns:th="http://www.thymeleaf.org"
+          xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+          lang="en">
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+        <!-- Favicon -->
+        <link rel="icon"
+              type="image/x-icon"
+              th:href="@{/favicon/favicon.ico}"/>
+        <link rel="icon"
+              type="image/png"
+              sizes="32x32"
+              th:href="@{/favicon/favicon-32x32.png}"/>
+        <link rel="icon"
+              type="image/png"
+              sizes="16x16"
+              th:href="@{/favicon/favicon-16x16.png}"/>
+        <link rel="apple-touch-icon"
+              sizes="180x180"
+              th:href="@{/favicon/apple-touch-icon.png}"/>
+
+        <title th:replace="${title}">Admin — SkipShop</title>
+        <link rel="stylesheet" th:href="@{/css/main.css}"/>
+        <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+    </head>
+    <body class="admin-body">
+
+    <!-- ── Top Admin Navbar ──────────────────────────────────────── -->
+    <header class="admin-header">
+        <div class="admin-header-left">
+            <button class="sidebar-toggle"
+                    id="sidebarToggle"
+                    type="button">☰</button>
+            <a href="/admin/dashboard"
+               class="admin-brand">
+                ⚙️ SkipShop <span>Admin</span>
+            </a>
+        </div>
+        <div class="admin-header-right">
+            <a href="/" class="admin-header-link">
+                🏠 View Store
+            </a>
+            <span class="admin-header-user">
+            👤 <sec:authentication property="name"/>
+        </span>
+            <form th:action="@{/auth/logout}" method="post">
+                <button type="submit" class="admin-logout-btn">
+                    🚪 Logout
+                </button>
+            </form>
+        </div>
+    </header>
+
+    <div class="admin-wrapper">
+
+        <!-- ── Sidebar ───────────────────────────────────────────── -->
+        <aside class="admin-sidebar" id="adminSidebar">
+            <nav class="sidebar-nav">
+
+                <div class="sidebar-section-title">Main</div>
+
+                <a th:href="@{/admin/dashboard}"
+                   class="sidebar-link"
+                   th:classappend="${activePage == 'dashboard'}
+                   ? ' active' : ''">
+                    📊 Dashboard
+                </a>
+
+                <div class="sidebar-section-title">Management</div>
+
+                <a th:href="@{/admin/users}"
+                   class="sidebar-link"
+                   th:classappend="${activePage == 'users'}
+                   ? ' active' : ''">
+                    👥 Users
+                </a>
+
+                <a th:href="@{/admin/products}"
+                   class="sidebar-link"
+                   th:classappend="${activePage == 'products'}
+                   ? ' active' : ''">
+                    📦 Products
+                </a>
+
+                <a th:href="@{/admin/categories}"
+                   class="sidebar-link"
+                   th:classappend="${activePage == 'categories'}
+                   ? ' active' : ''">
+                    🏷️ Categories
+                </a>
+
+                <a th:href="@{/admin/orders}"
+                   class="sidebar-link"
+                   th:classappend="${activePage == 'orders'}
+                   ? ' active' : ''">
+                    🛒 Orders
+                </a>
+
+                <a th:href="@{/admin/shipping}"
+                   class="sidebar-link"
+                   th:classappend="${activePage == 'shipping'}
+                   ? ' active' : ''">
+                    🚚 Shipping
+                </a>
+
+            </nav>
+        </aside>
+
+        <!-- ── Main Content ──────────────────────────────────────── -->
+        <main class="admin-main">
+
+            <!-- Flash alerts -->
+            <div th:if="${successMessage}"
+                 class="alert alert-success">
+                <span th:text="${successMessage}"></span>
+            </div>
+            <div th:if="${errorMessage}"
+                 class="alert alert-danger">
+                <span th:text="${errorMessage}"></span>
+            </div>
+
+            <!-- Page content injected here -->
+            <th:block th:replace="${content}"></th:block>
+
+        </main>
+
+    </div>
+
+    <script th:src="@{/js/main.js}"></script>
+    <script th:src="@{/js/admin.js}"></script>
+    </body>
+    </html>
+</th:block>
+
+</html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <!-- Favicon -->
+    <link rel="icon"
+          type="image/x-icon"
+          th:href="@{/favicon/favicon.ico}"/>
+    <link rel="icon"
+          type="image/png"
+          sizes="32x32"
+          th:href="@{/favicon/favicon-32x32.png}"/>
+    <link rel="icon"
+          type="image/png"
+          sizes="16x16"
+          th:href="@{/favicon/favicon-16x16.png}"/>
+    <link rel="apple-touch-icon"
+          sizes="180x180"
+          th:href="@{/favicon/apple-touch-icon.png}"/>
+    
+    <title>Register — SkipShop</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}"/>
+</head>
+<body>
+
+<div class="auth-wrapper">
+    <div class="auth-card">
+
+        <!-- Brand -->
+        <a href="/" class="brand">Skip<span style="color:#1a1a2e">Shop</span></a>
+
+        <h2>Create account</h2>
+        <p class="subtitle">Join SkipShop as a buyer or seller</p>
+
+        <!-- Alerts -->
+        <div th:replace="~{fragments/alerts :: alerts}"></div>
+
+        <!-- Register Form — posts to REST API via JS below -->
+        <form id="registerForm">
+
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username"
+                       class="form-control"
+                       placeholder="Choose a username"
+                       required/>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email"
+                       class="form-control"
+                       placeholder="Enter your email"
+                       required/>
+            </div>
+
+            <div class="form-group">
+                <label for="fullName">Full Name</label>
+                <input type="text" id="fullName" name="fullName"
+                       class="form-control"
+                       placeholder="Enter your full name"
+                       required/>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password"
+                       class="form-control"
+                       placeholder="At least 6 characters"
+                       required/>
+            </div>
+
+            <div class="form-group">
+                <label for="role">I want to</label>
+                <select id="role" name="role" class="form-control" required>
+                    <option value="">-- Select role --</option>
+                    <option value="ROLE_BUYER">🛒 Buy products</option>
+                    <option value="ROLE_SELLER">📦 Sell products</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="address">Address (optional)</label>
+                <input type="text" id="address" name="address"
+                       class="form-control"
+                       placeholder="Your shipping address"/>
+            </div>
+
+            <div class="form-group">
+                <label for="phoneNumber">Phone (optional)</label>
+                <input type="text" id="phoneNumber" name="phoneNumber"
+                       class="form-control"
+                       placeholder="Your phone number"/>
+            </div>
+
+            <!-- Error shown by JS -->
+            <div id="registerError" class="alert alert-danger"
+                 style="display:none;"></div>
+
+            <button type="submit" class="btn btn-primary btn-block">
+                Create Account
+            </button>
+
+        </form>
+
+        <div class="auth-footer">
+            Already have an account?
+            <a href="/auth/login">Sign in</a>
+        </div>
+
+    </div>
+</div>
+
+<script th:src="@{/js/main.js}"></script>
+<script>
+    // Register calls the REST API, then auto-logs-in via form submit
+    document.getElementById('registerForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const errorDiv = document.getElementById('registerError');
+        errorDiv.style.display = 'none';
+
+        const payload = {
+            username:    document.getElementById('username').value,
+            email:       document.getElementById('email').value,
+            fullName:    document.getElementById('fullName').value,
+            password:    document.getElementById('password').value,
+            role:        document.getElementById('role').value,
+            address:     document.getElementById('address').value,
+            phoneNumber: document.getElementById('phoneNumber').value
+        };
+
+        try {
+            // Step 1: Register via REST API
+            const res = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                // Show validation errors or business errors
+                const msg = data.message || 'Registration failed';
+                errorDiv.textContent = msg;
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            // Step 2: Auto-login using Spring Security form login
+            // Build a hidden form and submit it programmatically
+            const loginForm = document.createElement('form');
+            loginForm.method = 'POST';
+            loginForm.action = '/auth/login';
+
+            const usernameInput = document.createElement('input');
+            usernameInput.name  = 'username';
+            usernameInput.value = payload.username;
+
+            const passwordInput = document.createElement('input');
+            passwordInput.name  = 'password';
+            passwordInput.value = payload.password;
+
+            // CSRF token required for POST
+            const csrfMeta   = document.querySelector('meta[name="_csrf"]');
+            const csrfHeader = document.querySelector('meta[name="_csrf_header"]');
+
+            if (csrfMeta) {
+                const csrfInput = document.createElement('input');
+                csrfInput.type  = 'hidden';
+                csrfInput.name  = '_csrf';
+                csrfInput.value = csrfMeta.getAttribute('content');
+                loginForm.appendChild(csrfInput);
+            }
+
+            loginForm.appendChild(usernameInput);
+            loginForm.appendChild(passwordInput);
+            document.body.appendChild(loginForm);
+            loginForm.submit(); // auto-login → redirects to homepage
+
+        } catch (err) {
+            errorDiv.textContent = 'Network error. Please try again.';
+            errorDiv.style.display = 'block';
+        }
+    });
+</script>
+</body>
+</html>

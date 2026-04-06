@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <title th:text="${editMode} ? 'Edit Product — SkipShop'
+                               : 'List New Product — SkipShop'">
+        Product Form — SkipShop
+    </title>
+    <link rel="stylesheet" th:href="@{/css/main.css}"/>
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main>
+    <div class="container mt-3">
+
+        <div th:replace="~{fragments/alerts :: alerts}"></div>
+
+        <div style="max-width:680px; margin:0 auto;">
+
+            <div style="background:white; border-radius:12px;
+                    padding:2.5rem;
+                    box-shadow:0 2px 12px rgba(0,0,0,0.08);">
+
+                <!-- Header -->
+                <h2 style="font-size:1.5rem; font-weight:800;
+                       color:#1a1a2e; margin-bottom:0.3rem;"
+                    th:text="${editMode} ? 'Edit Product' : 'List New Product'">
+                </h2>
+                <p class="text-muted mb-3"
+                   th:text="${editMode}
+                   ? 'Update your product details below'
+                   : 'Fill in the details to list your product for sale'">
+                </p>
+
+                <!-- Form -->
+                <form th:action="${editMode}
+                          ? @{/products/{id}/edit(id=${product.id})}
+                          : @{/products/new}"
+                      th:object="${productRequest}"
+                      method="post"
+                      enctype="multipart/form-data">
+
+                    <!-- Product Name -->
+                    <div class="form-group">
+                        <label for="name">Product Name *</label>
+                        <input type="text"
+                               id="name"
+                               th:field="*{name}"
+                               class="form-control"
+                               th:classappend="${#fields.hasErrors('name')}
+                               ? 'is-invalid' : ''"
+                               placeholder="Enter product name"/>
+                        <small class="text-danger"
+                               th:if="${#fields.hasErrors('name')}"
+                               th:errors="*{name}">
+                        </small>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description"
+                                  th:field="*{description}"
+                                  class="form-control"
+                                  rows="4"
+                                  placeholder="Describe your product...">
+                    </textarea>
+                    </div>
+
+                    <!-- Price + Stock (side by side) -->
+                    <div style="display:grid;
+                            grid-template-columns:1fr 1fr; gap:1rem;">
+                        <div class="form-group">
+                            <label for="price">Price ($) *</label>
+                            <input type="number"
+                                   id="price"
+                                   th:field="*{price}"
+                                   class="form-control"
+                                   th:classappend="${#fields.hasErrors('price')}
+                                   ? 'is-invalid' : ''"
+                                   step="0.01"
+                                   min="0.01"
+                                   placeholder="0.00"/>
+                            <small class="text-danger"
+                                   th:if="${#fields.hasErrors('price')}"
+                                   th:errors="*{price}">
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="stockQuantity">Stock Quantity *</label>
+                            <input type="number"
+                                   id="stockQuantity"
+                                   th:field="*{stockQuantity}"
+                                   class="form-control"
+                                   th:classappend="${#fields.hasErrors('stockQuantity')}
+                                   ? 'is-invalid' : ''"
+                                   min="0"
+                                   placeholder="0"/>
+                            <small class="text-danger"
+                                   th:if="${#fields.hasErrors('stockQuantity')}"
+                                   th:errors="*{stockQuantity}">
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- Category -->
+                    <div class="form-group">
+                        <label for="categoryId">Category *</label>
+                        <select id="categoryId"
+                                th:field="*{categoryId}"
+                                class="form-control"
+                                th:classappend="${#fields.hasErrors('categoryId')}
+                                ? 'is-invalid' : ''">
+                            <option value="">-- Select a category --</option>
+                            <option th:each="cat : ${categories}"
+                                    th:value="${cat.id}"
+                                    th:text="${cat.name}">
+                            </option>
+                        </select>
+                        <small class="text-danger"
+                               th:if="${#fields.hasErrors('categoryId')}"
+                               th:errors="*{categoryId}">
+                        </small>
+                    </div>
+
+                    <!-- Image URL -->
+                    <!-- ── Image Upload ──────────────────────────────────────── -->
+                    <div class="form-group">
+                        <label>Product Image</label>
+
+                        <!-- Current image preview (edit mode) -->
+                        <div th:if="${editMode and product.imageUrl != null
+              and !product.imageUrl.isEmpty()}"
+                             style="margin-bottom:0.8rem;">
+                            <p style="font-size:0.82rem; color:#888;
+                  margin-bottom:0.4rem;">
+                                Current image:
+                            </p>
+                            <img th:src="${product.imageUrl}"
+                                 th:alt="${product.name}"
+                                 style="max-width:200px; max-height:140px;
+                    border-radius:8px;
+                    border:1px solid #eee;
+                    object-fit:cover;"
+                                 onerror="this.style.display='none'"/>
+                        </div>
+
+                        <!-- Tab switcher: Upload vs URL -->
+                        <div style="display:flex; gap:0;
+                border:1.5px solid #ddd;
+                border-radius:6px;
+                overflow:hidden;
+                margin-bottom:0.8rem;
+                width:fit-content;">
+                            <button type="button"
+                                    id="tabUpload"
+                                    onclick="switchTab('upload')"
+                                    style="padding:0.4rem 1rem;
+                       font-size:0.85rem;
+                       border:none;
+                       background:#e94560;
+                       color:white;
+                       cursor:pointer;">
+                                📁 Upload File
+                            </button>
+                            <button type="button"
+                                    id="tabUrl"
+                                    onclick="switchTab('url')"
+                                    style="padding:0.4rem 1rem;
+                       font-size:0.85rem;
+                       border:none;
+                       background:#f4f4f4;
+                       color:#555;
+                       cursor:pointer;">
+                                🔗 Use URL
+                            </button>
+                        </div>
+
+                        <!-- Upload panel -->
+                        <div id="panelUpload">
+                            <input type="file"
+                                   id="imageFile"
+                                   name="imageFile"
+                                   accept="image/jpeg,image/png,image/webp,image/gif"
+                                   class="form-control"
+                                   style="padding:0.4rem;"
+                                   onchange="previewUploadedFile(this)"/>
+                            <small class="text-muted">
+                                Accepted: JPG, PNG, WEBP, GIF — Max 5MB
+                            </small>
+
+                            <!-- Upload preview -->
+                            <div id="uploadPreview"
+                                 style="margin-top:0.8rem; display:none;">
+                                <img id="uploadPreviewImg"
+                                     src=""
+                                     alt="Preview"
+                                     style="max-width:100%;
+                        max-height:200px;
+                        border-radius:8px;
+                        border:1px solid #eee;
+                        object-fit:cover;"/>
+                            </div>
+                        </div>
+
+                        <!-- URL panel -->
+                        <div id="panelUrl" style="display:none;">
+                            <input type="text"
+                                   id="imageUrl"
+                                   name="imageUrl"
+                                   th:value="*{imageUrl}"
+                                   class="form-control"
+                                   placeholder="https://example.com/image.jpg"
+                                   oninput="previewUrlImage(this.value)"/>
+
+                            <!-- URL preview -->
+                            <div id="urlPreview"
+                                 style="margin-top:0.8rem; display:none;">
+                                <img id="urlPreviewImg"
+                                     src=""
+                                     alt="Preview"
+                                     style="max-width:100%;
+                        max-height:200px;
+                        border-radius:8px;
+                        border:1px solid #eee;
+                        object-fit:cover;"
+                                     onerror="this.parentElement.style.display='none'"/>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex gap-2 mt-3">
+                        <button type="submit" class="btn btn-primary">
+                        <span th:text="${editMode}
+                            ? '💾 Save Changes'
+                            : '🚀 List Product'">
+                        </span>
+                        </button>
+                        <a th:href="${editMode}
+                           ? @{/products/{id}(id=${product.id})}
+                           : @{/products/my-listings}"
+                           class="btn btn-outline">
+                            Cancel
+                        </a>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/main.js}"></script>
+<script>
+    // ── Tab switcher ───────────────────────────────────────────
+    function switchTab(tab) {
+        const uploadPanel = document.getElementById('panelUpload');
+        const urlPanel    = document.getElementById('panelUrl');
+        const tabUpload   = document.getElementById('tabUpload');
+        const tabUrl      = document.getElementById('tabUrl');
+
+        if (tab === 'upload') {
+            uploadPanel.style.display = 'block';
+            urlPanel.style.display    = 'none';
+            tabUpload.style.background = '#e94560';
+            tabUpload.style.color      = 'white';
+            tabUrl.style.background    = '#f4f4f4';
+            tabUrl.style.color         = '#555';
+            // Clear URL input so it doesn't override the file
+            document.getElementById('imageUrl').value = '';
+        } else {
+            uploadPanel.style.display = 'none';
+            urlPanel.style.display    = 'block';
+            tabUrl.style.background   = '#e94560';
+            tabUrl.style.color        = 'white';
+            tabUpload.style.background = '#f4f4f4';
+            tabUpload.style.color      = '#555';
+            // Clear file input so it doesn't override the URL
+            document.getElementById('imageFile').value = '';
+        }
+    }
+
+    // ── Preview uploaded file ──────────────────────────────────
+    function previewUploadedFile(input) {
+        const preview    = document.getElementById('uploadPreview');
+        const previewImg = document.getElementById('uploadPreviewImg');
+
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImg.src        = e.target.result;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            preview.style.display = 'none';
+        }
+    }
+
+    // ── Preview URL image ──────────────────────────────────────
+    function previewUrlImage(url) {
+        const preview    = document.getElementById('urlPreview');
+        const previewImg = document.getElementById('urlPreviewImg');
+
+        if (url.trim()) {
+            previewImg.src        = url;
+            preview.style.display = 'block';
+        } else {
+            preview.style.display = 'none';
+        }
+    }
+
+    // ── On page load: if URL field has value, show URL tab ─────
+    window.addEventListener('DOMContentLoaded', function () {
+        const urlValue = document.getElementById('imageUrl').value;
+        if (urlValue && urlValue.trim() !== '') {
+            switchTab('url');
+        }
+    });
+</script>
+</body>
+</html>

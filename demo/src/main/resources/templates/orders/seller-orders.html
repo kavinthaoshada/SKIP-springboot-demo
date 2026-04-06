@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Customer Orders — SkipShop</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}"/>
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main>
+    <div class="container mt-3">
+
+        <div th:replace="~{fragments/alerts :: alerts}"></div>
+
+        <!-- Header -->
+        <div class="section-header mb-3">
+            <h2>Customer Orders</h2>
+            <a href="/products/my-listings"
+               class="btn btn-outline btn-sm">
+                📦 My Listings
+            </a>
+        </div>
+
+        <!-- Empty state -->
+        <div class="empty-state"
+             th:if="${orders.content.isEmpty()}">
+            <h3>No orders yet</h3>
+            <p>Orders for your products will appear here.</p>
+        </div>
+
+        <!-- Orders table -->
+        <div class="table-wrapper"
+             th:unless="${orders.content.isEmpty()}">
+            <table>
+                <thead>
+                <tr>
+                    <th>Order #</th>
+                    <th>Buyer</th>
+                    <th>Date</th>
+                    <th>Items</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Update Status</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="order : ${orders.content}">
+
+                    <td>
+                        <strong th:text="'#' + ${order.id}"></strong>
+                    </td>
+
+                    <td th:text="${order.buyerUsername}"></td>
+
+                    <td th:text="${#temporals.format(
+                                   order.createdAt,
+                                   'MMM dd, yyyy')}">
+                    </td>
+
+                    <td>
+                        <span th:if="${!order.orderItems.isEmpty()}"
+                              th:text="${order.orderItems[0].productName}">
+                        </span>
+                        <span th:if="${order.orderItems.size() > 1}"
+                              class="text-muted"
+                              th:text="' +' + ${order.orderItems.size() - 1}
+                                       + ' more'">
+                        </span>
+                    </td>
+
+                    <td>
+                        <strong style="color:#e94560;"
+                                th:text="'$' + ${#numbers.formatDecimal(
+                                         order.totalAmount, 1, 2)}">
+                        </strong>
+                    </td>
+
+                    <td>
+                        <span class="badge"
+                              th:classappend="'badge-'
+                                  + ${order.status.toLowerCase()}"
+                              th:text="${order.status}">
+                        </span>
+                    </td>
+
+                    <!-- Inline status update form -->
+                    <td>
+                        <form th:action="@{/orders/{id}/status(id=${order.id})}"
+                              method="post"
+                              class="d-flex gap-1"
+                              th:if="${order.status != 'DELIVERED'
+                                   and order.status != 'CANCELLED'}">
+                            <select name="status" class="form-control"
+                                    style="padding:0.35rem 0.6rem;
+                                           font-size:0.82rem; width:130px;">
+                                <option th:each="s : ${orderStatuses}"
+                                        th:value="${s}"
+                                        th:text="${s}"
+                                        th:selected="${s.name()
+                                                    == order.status}">
+                                </option>
+                            </select>
+                            <button type="submit"
+                                    class="btn btn-sm btn-success">
+                                ✓
+                            </button>
+                        </form>
+                        <span th:if="${order.status == 'DELIVERED'
+                                   or order.status == 'CANCELLED'}"
+                              class="text-muted"
+                              style="font-size:0.85rem;">
+                            Finalized
+                        </span>
+                    </td>
+
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination"
+             th:if="${orders.totalPages > 1}">
+
+            <a th:if="${orders.pageNumber > 0}"
+               th:href="@{/orders/seller(page=${orders.pageNumber - 1})}">
+                ← Prev
+            </a>
+
+            <th:block th:each="i : ${#numbers.sequence(
+                               0, orders.totalPages - 1)}">
+                <a th:href="@{/orders/seller(page=${i})}"
+                   th:text="${i + 1}"
+                   th:classappend="${i == orders.pageNumber}
+                   ? 'active' : ''">
+                </a>
+            </th:block>
+
+            <a th:if="${!orders.lastPage}"
+               th:href="@{/orders/seller(page=${orders.pageNumber + 1})}">
+                Next →
+            </a>
+
+        </div>
+
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

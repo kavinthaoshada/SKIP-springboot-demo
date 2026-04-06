@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<nav th:fragment="navbar">
+
+    <!-- ── Top Navigation Bar ───────────────────────────────── -->
+    <div class="navbar">
+
+        <!-- Brand -->
+        <a href="/" class="navbar-brand">
+            Skip<span>Shop</span>
+        </a>
+
+        <!-- Search Bar -->
+        <form class="navbar-search"
+              action="/products/search"
+              method="get">
+            <input type="text"
+                   name="keyword"
+                   placeholder="Search for products..."
+                   th:value="${param.keyword}"
+                   autocomplete="off"/>
+            <button type="submit">🔍</button>
+        </form>
+
+        <!-- Nav Links -->
+        <div class="navbar-links">
+
+            <!-- Anonymous users only -->
+            <a href="/auth/login"
+               sec:authorize="isAnonymous()">
+                Login
+            </a>
+            <a href="/auth/register"
+               class="btn-nav"
+               sec:authorize="isAnonymous()">
+                Register
+            </a>
+
+            <!-- Buyer links -->
+            <a href="/orders"
+               sec:authorize="hasAuthority('ROLE_BUYER')">
+                🛍️ My Orders
+            </a>
+
+            <!-- Seller links -->
+            <a href="/products/my-listings"
+               sec:authorize="hasAuthority('ROLE_SELLER')">
+                📦 My Listings
+            </a>
+            <a href="/products/new"
+               class="btn-nav"
+               sec:authorize="hasAuthority('ROLE_SELLER')">
+                + List Item
+            </a>
+
+            <!-- Admin link -->
+            <a href="/admin/dashboard"
+               class="btn-nav"
+               sec:authorize="hasAuthority('ROLE_ADMIN')">
+                ⚙️ Dashboard
+            </a>
+
+            <!-- User dropdown — authenticated users only -->
+            <div class="nav-dropdown"
+                 id="userDropdown"
+                 sec:authorize="isAuthenticated()">
+
+                <button class="nav-dropdown-toggle"
+                        id="dropdownToggle"
+                        type="button">
+                    👤 <sec:authentication property="name"/> ▾
+                </button>
+
+                <div class="nav-dropdown-menu"
+                     id="dropdownMenu">
+
+                    <a href="/user/profile">👤 My Profile</a>
+
+                    <a href="/orders"
+                       sec:authorize="hasAuthority('ROLE_BUYER')">
+                        🛍️ My Orders
+                    </a>
+
+                    <a href="/products/my-listings"
+                       sec:authorize="hasAuthority('ROLE_SELLER')">
+                        📦 My Listings
+                    </a>
+
+                    <a href="/orders/seller"
+                       sec:authorize="hasAuthority('ROLE_SELLER')">
+                        🧾 Customer Orders
+                    </a>
+
+                    <a href="/admin/dashboard"
+                       sec:authorize="hasAuthority('ROLE_ADMIN')">
+                        ⚙️ Admin Dashboard
+                    </a>
+
+                    <hr/>
+
+                    <form th:action="@{/auth/logout}" method="post">
+                        <button type="submit"
+                                class="dropdown-logout">
+                            🚪 Logout
+                        </button>
+                    </form>
+
+                </div>
+            </div>
+            <!-- End dropdown -->
+
+        </div>
+        <!-- End navbar-links -->
+
+    </div>
+    <!-- End top navbar -->
+
+    <!-- ── Category Bar ─────────────────────────────────────── -->
+    <div class="category-bar">
+        <a href="/products"
+           th:classappend="${currentPage == 'all'} ? 'active'">
+            All Products
+        </a>
+        <a th:each="cat : ${navCategories}"
+           th:href="@{/products(categoryId=${cat.id})}"
+           th:text="${cat.name}"
+           th:classappend="${param.categoryId != null
+               and param.categoryId[0] == cat.id.toString()}
+               ? 'active'">
+        </a>
+    </div>
+
+</nav>
+
+</html>

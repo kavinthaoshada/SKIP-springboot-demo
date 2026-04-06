@@ -1,0 +1,967 @@
+{
+  "info": {
+    "name": "skip e-commerce API",
+    "_postman_id": "skip-ecommerce-api-collection",
+    "description": "End-to-end API testing collection for the skip e-commerce backend. Run requests in the recommended order — some depend on data created by earlier ones.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "8B — Auth: Register Users",
+      "item": [
+        {
+          "name": "Register Seller",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"seller01\",\n    \"email\": \"seller01@example.com\",\n    \"password\": \"password123\",\n    \"fullName\": \"John Seller\",\n    \"role\": \"ROLE_SELLER\",\n    \"address\": \"123 Seller Street\",\n    \"phoneNumber\": \"1234567890\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Register a seller account. Expected: 201 Created."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n    \"success\": true,\n    \"message\": \"User registered successfully\",\n    \"data\": {\n        \"token\": \"eyJhbGciOiJIUzM4...\",\n        \"tokenType\": \"Bearer\",\n        \"username\": \"seller01\",\n        \"email\": \"seller01@example.com\",\n        \"role\": \"ROLE_SELLER\"\n    },\n    \"timestamp\": \"2025-01-01T10:00:00\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Register Buyer",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"buyer01\",\n    \"email\": \"buyer01@example.com\",\n    \"password\": \"password123\",\n    \"fullName\": \"Jane Buyer\",\n    \"role\": \"ROLE_BUYER\",\n    \"address\": \"456 Buyer Avenue\",\n    \"phoneNumber\": \"9876543210\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Register a buyer account. Expected: 201 Created."
+          },
+          "response": []
+        },
+        {
+          "name": "Register Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"admin01\",\n    \"email\": \"admin01@example.com\",\n    \"password\": \"password123\",\n    \"fullName\": \"Admin User\",\n    \"role\": \"ROLE_ADMIN\",\n    \"address\": \"789 Admin Road\",\n    \"phoneNumber\": \"1122334455\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Register an admin account. Expected: 201 Created."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "8C — Auth: Login & Auto-Save Tokens",
+      "item": [
+        {
+          "name": "Login as Seller",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.environment.set(\"seller_token\", json.data.token);",
+                  "console.log(\"Seller token saved:\", json.data.token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"seller01\",\n    \"password\": \"password123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Login as seller. Tests script auto-saves token to `seller_token`."
+          },
+          "response": []
+        },
+        {
+          "name": "Login as Buyer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.environment.set(\"buyer_token\", json.data.token);",
+                  "console.log(\"Buyer token saved:\", json.data.token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"buyer01\",\n    \"password\": \"password123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Login as buyer. Tests script auto-saves token to `buyer_token`."
+          },
+          "response": []
+        },
+        {
+          "name": "Login as Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.environment.set(\"admin_token\", json.data.token);",
+                  "console.log(\"Admin token saved:\", json.data.token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"admin01\",\n    \"password\": \"password123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Login as admin. Tests script auto-saves token to `admin_token`."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "8D — Categories (Admin only)",
+      "item": [
+        {
+          "name": "Create Parent Category",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.environment.set(\"category_id\", json.data.id);",
+                  "console.log(\"Category ID saved:\", json.data.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Electronics\",\n    \"description\": \"Electronic devices and accessories\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/categories",
+              "host": ["{{base_url}}"],
+              "path": ["api", "categories"]
+            },
+            "description": "Create a parent category. Requires admin token. Auto-saves `category_id`. Expected: 201 Created."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n    \"success\": true,\n    \"message\": \"Category created successfully\",\n    \"data\": {\n        \"id\": 1,\n        \"name\": \"Electronics\",\n        \"description\": \"Electronic devices and accessories\",\n        \"parentId\": null,\n        \"parentName\": null,\n        \"subCategories\": []\n    }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Sub-Category (Smartphones)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Smartphones\",\n    \"description\": \"Mobile phones and smartphones\",\n    \"parentId\": {{category_id}}\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/categories",
+              "host": ["{{base_url}}"],
+              "path": ["api", "categories"]
+            },
+            "description": "Create a sub-category nested under Electronics. Requires admin token and `category_id`."
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/categories",
+              "host": ["{{base_url}}"],
+              "path": ["api", "categories"]
+            },
+            "description": "Fetch all categories. Public endpoint. Should show Electronics with Smartphones nested as a sub-category."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Top-Level Categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/categories/top-level",
+              "host": ["{{base_url}}"],
+              "path": ["api", "categories", "top-level"]
+            },
+            "description": "Returns only root-level categories. Public endpoint. Should return only Electronics, not Smartphones."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "8E — Products (Seller only for write)",
+      "item": [
+        {
+          "name": "Create Product 1 (iPhone 15 Pro)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.environment.set(\"product_id\", json.data.id);",
+                  "console.log(\"Product ID saved:\", json.data.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{seller_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"iPhone 15 Pro\",\n    \"description\": \"Latest Apple smartphone with titanium design\",\n    \"price\": 999.99,\n    \"stockQuantity\": 50,\n    \"imageUrl\": \"https://example.com/iphone15.jpg\",\n    \"categoryId\": {{category_id}}\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/products",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products"]
+            },
+            "description": "Create product 1. Requires seller token and `category_id`. Auto-saves `product_id`. Expected: 201 Created."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n    \"success\": true,\n    \"message\": \"Product created successfully\",\n    \"data\": {\n        \"id\": 1,\n        \"name\": \"iPhone 15 Pro\",\n        \"price\": 999.99,\n        \"stockQuantity\": 50,\n        \"status\": \"ACTIVE\",\n        \"sellerId\": 1,\n        \"sellerUsername\": \"seller01\",\n        \"categoryId\": 1,\n        \"categoryName\": \"Electronics\"\n    }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Product 2 (AirPods Pro)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{seller_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"AirPods Pro\",\n    \"description\": \"Premium wireless earbuds with noise cancellation\",\n    \"price\": 249.99,\n    \"stockQuantity\": 100,\n    \"imageUrl\": \"https://example.com/airpods.jpg\",\n    \"categoryId\": {{category_id}}\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/products",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products"]
+            },
+            "description": "Create a second product for multi-item order testing. Requires seller token."
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Products (public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/products",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products"]
+            },
+            "description": "Fetch all products. Public endpoint, no auth needed."
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Products — Paginated (public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/products?page=0&size=5",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "5" }
+              ]
+            },
+            "description": "Fetch products with pagination. Public endpoint."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Product by ID (public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/products/{{product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products", "{{product_id}}"]
+            },
+            "description": "Fetch a single product by ID. Public endpoint. Also use after placing an order to verify stock decreased."
+          },
+          "response": []
+        },
+        {
+          "name": "Search Products (public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/products/search?keyword=iphone",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products", "search"],
+              "query": [
+                { "key": "keyword", "value": "iphone" }
+              ]
+            },
+            "description": "Search products by keyword. Public endpoint."
+          },
+          "response": []
+        },
+        {
+          "name": "Filter Products by Keyword & Price (public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/products/filter?keyword=apple&minPrice=100&maxPrice=1500",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products", "filter"],
+              "query": [
+                { "key": "keyword", "value": "apple" },
+                { "key": "minPrice", "value": "100" },
+                { "key": "maxPrice", "value": "1500" }
+              ]
+            },
+            "description": "Filter products by keyword and price range. Public endpoint."
+          },
+          "response": []
+        },
+        {
+          "name": "Filter Products by Category & Price (public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/products/filter?categoryId={{category_id}}&minPrice=200&maxPrice=300",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products", "filter"],
+              "query": [
+                { "key": "categoryId", "value": "{{category_id}}" },
+                { "key": "minPrice", "value": "200" },
+                { "key": "maxPrice", "value": "300" }
+              ]
+            },
+            "description": "Filter products by category ID and price range. Public endpoint."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Seller's Own Listings",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{seller_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/products/my-listings",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products", "my-listings"]
+            },
+            "description": "Returns only the products listed by the authenticated seller."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Product (Seller)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{seller_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"iPhone 15 Pro Max\",\n    \"description\": \"Updated description — now with 256GB storage\",\n    \"price\": 1099.99,\n    \"stockQuantity\": 45,\n    \"imageUrl\": \"https://example.com/iphone15promax.jpg\",\n    \"categoryId\": {{category_id}}\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/products/{{product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products", "{{product_id}}"]
+            },
+            "description": "Update a product's details. Requires seller token."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "8F — User Profile",
+      "item": [
+        {
+          "name": "Get Own Profile (Buyer)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{buyer_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/users/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users", "me"]
+            },
+            "description": "Get the authenticated user's profile. Works with any valid token."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Own Profile (Buyer)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{buyer_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/users/me?fullName=Jane Updated&address=New Address 123",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users", "me"],
+              "query": [
+                { "key": "fullName", "value": "Jane Updated" },
+                { "key": "address", "value": "New Address 123" }
+              ]
+            },
+            "description": "Update the authenticated user's profile via query params."
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Users (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/users",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users"]
+            },
+            "description": "Fetch all registered users. Requires admin token."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "8G — Orders",
+      "item": [
+        {
+          "name": "Place an Order (Buyer)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.environment.set(\"order_id\", json.data.id);",
+                  "console.log(\"Order ID saved:\", json.data.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{buyer_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"items\": [\n        {\n            \"productId\": {{product_id}},\n            \"quantity\": 2\n        }\n    ],\n    \"shippingAddress\": \"456 Buyer Avenue, New York, NY 10001\",\n    \"paymentMethod\": \"CREDIT_CARD\",\n    \"notes\": \"Please deliver between 9am and 5pm\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/orders",
+              "host": ["{{base_url}}"],
+              "path": ["api", "orders"]
+            },
+            "description": "Place a single-item order. Requires buyer token and `product_id`. Auto-saves `order_id`. After running, verify stock decreased by checking GET /api/products/{{product_id}}."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n    \"success\": true,\n    \"message\": \"Order placed successfully\",\n    \"data\": {\n        \"id\": 1,\n        \"buyerUsername\": \"buyer01\",\n        \"status\": \"PENDING\",\n        \"totalAmount\": 1999.98,\n        \"shippingAddress\": \"456 Buyer Avenue...\",\n        \"orderItems\": [\n            {\n                \"productName\": \"iPhone 15 Pro Max\",\n                \"quantity\": 2,\n                \"unitPrice\": 1099.99,\n                \"subTotal\": 2199.98\n            }\n        ]\n    }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Place Multi-Item Order (Buyer)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{buyer_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"items\": [\n        {\n            \"productId\": 1,\n            \"quantity\": 1\n        },\n        {\n            \"productId\": 2,\n            \"quantity\": 3\n        }\n    ],\n    \"shippingAddress\": \"456 Buyer Avenue, New York\",\n    \"paymentMethod\": \"PAYPAL\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/orders",
+              "host": ["{{base_url}}"],
+              "path": ["api", "orders"]
+            },
+            "description": "Place a multi-item order with two products. Requires buyer token."
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Orders (Buyer)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{buyer_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/orders",
+              "host": ["{{base_url}}"],
+              "path": ["api", "orders"]
+            },
+            "description": "Get all orders placed by the authenticated buyer."
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Orders — Paginated (Buyer)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{buyer_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/orders?page=0&size=5",
+              "host": ["{{base_url}}"],
+              "path": ["api", "orders"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "5" }
+              ]
+            },
+            "description": "Get buyer's orders with pagination."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Order by ID (Buyer)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{buyer_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/orders/{{order_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "orders", "{{order_id}}"]
+            },
+            "description": "Fetch a single order by ID. Requires buyer token."
+          },
+          "response": []
+        },
+        {
+          "name": "Seller Views Their Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{seller_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/orders/seller",
+              "host": ["{{base_url}}"],
+              "path": ["api", "orders", "seller"]
+            },
+            "description": "Seller views all orders containing their products."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Order Status → CONFIRMED (Seller)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{seller_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"status\": \"CONFIRMED\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/orders/{{order_id}}/status",
+              "host": ["{{base_url}}"],
+              "path": ["api", "orders", "{{order_id}}", "status"]
+            },
+            "description": "Progress order to CONFIRMED. Requires seller token. Run SHIPPED and DELIVERED requests after this."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Order Status → SHIPPED (Seller)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{seller_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"status\": \"SHIPPED\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/orders/{{order_id}}/status",
+              "host": ["{{base_url}}"],
+              "path": ["api", "orders", "{{order_id}}", "status"]
+            },
+            "description": "Progress order to SHIPPED. Requires seller token."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Order Status → DELIVERED (Seller)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{seller_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"status\": \"DELIVERED\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/orders/{{order_id}}/status",
+              "host": ["{{base_url}}"],
+              "path": ["api", "orders", "{{order_id}}", "status"]
+            },
+            "description": "Progress order to DELIVERED. Requires seller token."
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel an Order (Buyer)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{buyer_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/orders/{{order_id}}/cancel",
+              "host": ["{{base_url}}"],
+              "path": ["api", "orders", "{{order_id}}", "cancel"]
+            },
+            "description": "Cancel a PENDING order. Requires buyer token. First place a fresh order (must be PENDING status), then run this. Product stock should be automatically restored after cancellation."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "8H — Error Scenarios",
+      "item": [
+        {
+          "name": "Error: Register Duplicate Username (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"seller01\",\n    \"email\": \"different@example.com\",\n    \"password\": \"password123\",\n    \"fullName\": \"Duplicate User\",\n    \"role\": \"ROLE_SELLER\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Try to register with an already-taken username. Expected 400 Bad Request."
+          },
+          "response": [
+            {
+              "name": "400 Bad Request",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n    \"success\": false,\n    \"message\": \"Username is already taken: seller01\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Error: Login with Wrong Password (401)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"buyer01\",\n    \"password\": \"wrongpassword\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Try to login with an incorrect password. Expected 401 Unauthorized."
+          },
+          "response": [
+            {
+              "name": "401 Unauthorized",
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n    \"success\": false,\n    \"message\": \"Invalid username or password\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Error: Create Product as Buyer (403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{buyer_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Unauthorized Product\",\n    \"description\": \"Buyer should not be able to create this\",\n    \"price\": 99.99,\n    \"stockQuantity\": 10,\n    \"categoryId\": {{category_id}}\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/products",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products"]
+            },
+            "description": "Try to create a product using a buyer token (wrong role). Expected 403 Forbidden."
+          },
+          "response": [
+            {
+              "name": "403 Forbidden",
+              "status": "Forbidden",
+              "code": 403,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n    \"success\": false,\n    \"message\": \"You do not have permission to perform this action\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Error: Access Protected Route Without Token (401/403)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/users/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users", "me"]
+            },
+            "description": "Hit a protected endpoint with no Authorization header. Expected 401 or 403."
+          },
+          "response": []
+        },
+        {
+          "name": "Error: Order Out-of-Stock Product (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{buyer_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"items\": [\n        {\n            \"productId\": {{product_id}},\n            \"quantity\": 9999\n        }\n    ],\n    \"shippingAddress\": \"456 Buyer Avenue\",\n    \"paymentMethod\": \"CREDIT_CARD\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/orders",
+              "host": ["{{base_url}}"],
+              "path": ["api", "orders"]
+            },
+            "description": "Try to order more than available stock. First set stock to 0 via Update Product, then run this. Expected 400 Bad Request."
+          },
+          "response": [
+            {
+              "name": "400 Bad Request — Insufficient Stock",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n    \"success\": false,\n    \"message\": \"Insufficient stock for product: iPhone 15 Pro Max. Available: 0\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Error: Cancel a Delivered Order (400)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{buyer_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/orders/{{order_id}}/cancel",
+              "host": ["{{base_url}}"],
+              "path": ["api", "orders", "{{order_id}}", "cancel"]
+            },
+            "description": "Try to cancel an order that is already DELIVERED. Run this after progressing an order through all statuses to DELIVERED. Expected 400 Bad Request."
+          },
+          "response": [
+            {
+              "name": "400 Bad Request — Cannot Cancel Delivered",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n    \"success\": false,\n    \"message\": \"Only pending orders can be cancelled. Current status: DELIVERED\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Error: Submit Empty Registration Body (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Submit an empty JSON body to confirm field-level validation is working. Expected 400 Bad Request with per-field error messages."
+          },
+          "response": [
+            {
+              "name": "400 Bad Request — Validation Failed",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n    \"success\": false,\n    \"message\": \"Validation failed\",\n    \"data\": {\n        \"username\": \"Username is required\",\n        \"email\": \"Email is required\",\n        \"password\": \"Password is required\",\n        \"fullName\": \"Full name is required\",\n        \"role\": \"Role is required\"\n    }\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

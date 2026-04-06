@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><title>Shipping</title></head>
+<body>
+
+<th:block th:replace="~{admin/layout ::
+    adminLayout(~{::title}, ~{::main})}">
+
+    <title>Shipping — Admin</title>
+
+    <main>
+        <div class="admin-page-header">
+            <div>
+                <h1>🚚 Shipping Management</h1>
+                <p>Track and manage order shipments</p>
+            </div>
+        </div>
+
+        <!-- Shipping Stats -->
+        <div class="stats-grid" style="margin-bottom:2rem;">
+            <div class="stat-card">
+                <div class="stat-icon orange">⏳</div>
+                <div class="stat-info">
+                    <h3 th:text="${pendingOrders.size()}">0</h3>
+                    <p>Pending</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon blue">✅</div>
+                <div class="stat-info">
+                    <h3 th:text="${confirmedOrders.size()}">0</h3>
+                    <p>Confirmed</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon purple">🚚</div>
+                <div class="stat-info">
+                    <h3 th:text="${shippedOrders.size()}">0</h3>
+                    <p>Shipped</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green">📬</div>
+                <div class="stat-info">
+                    <h3 th:text="${deliveredOrders.size()}">0</h3>
+                    <p>Delivered</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending & Confirmed — need action -->
+        <div class="admin-card" style="margin-bottom:1.5rem;">
+            <div class="admin-card-header">
+                <h2>⏳ Needs Action
+                    <span class="text-muted"
+                          style="font-size:0.85rem;font-weight:400;"
+                          th:text="'(' + ${pendingOrders.size()
+                               + confirmedOrders.size()}
+                               + ' orders)'">
+                </span>
+                </h2>
+            </div>
+            <div style="overflow-x:auto;">
+                <table class="admin-table">
+                    <thead>
+                    <tr>
+                        <th>Order #</th>
+                        <th>Buyer</th>
+                        <th>Shipping Address</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <!-- Pending orders -->
+                    <tr th:each="order : ${pendingOrders}">
+                        <td>
+                            <strong th:text="'#'+${order.id}">
+                            </strong>
+                        </td>
+                        <td th:text="${order.buyer.username}">
+                        </td>
+                        <td th:text="${order.shippingAddress}">
+                        </td>
+                        <td style="color:#e94560;font-weight:700;"
+                            th:text="'$'+${#numbers.formatDecimal(
+                                     order.totalAmount,1,2)}">
+                        </td>
+                        <td>
+                            <span class="badge badge-pending">
+                                PENDING
+                            </span>
+                        </td>
+                        <td>
+                            <form th:action="@{/admin/orders/{id}/status(id=${order.id})}"
+                                  method="post"
+                                  class="d-flex gap-1">
+                                <input type="hidden"
+                                       name="status"
+                                       value="CONFIRMED"/>
+                                <button type="submit"
+                                        class="btn btn-sm btn-success">
+                                    ✓ Confirm
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    <!-- Confirmed orders -->
+                    <tr th:each="order : ${confirmedOrders}">
+                        <td>
+                            <strong th:text="'#'+${order.id}">
+                            </strong>
+                        </td>
+                        <td th:text="${order.buyer.username}">
+                        </td>
+                        <td th:text="${order.shippingAddress}">
+                        </td>
+                        <td style="color:#e94560;font-weight:700;"
+                            th:text="'$'+${#numbers.formatDecimal(
+                                     order.totalAmount,1,2)}">
+                        </td>
+                        <td>
+                            <span class="badge badge-confirmed">
+                                CONFIRMED
+                            </span>
+                        </td>
+                        <td>
+                            <form th:action="@{/admin/orders/{id}/status(id=${order.id})}"
+                                  method="post"
+                                  class="d-flex gap-1">
+                                <input type="hidden"
+                                       name="status"
+                                       value="SHIPPED"/>
+                                <button type="submit"
+                                        class="btn btn-sm btn-primary">
+                                    🚚 Mark Shipped
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    <!-- Empty state -->
+                    <tr th:if="${pendingOrders.isEmpty()
+                              and confirmedOrders.isEmpty()}">
+                        <td colspan="6"
+                            class="text-muted text-center"
+                            style="padding:2rem;">
+                            ✅ No orders need action right now
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Shipped orders — in transit -->
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h2>🚚 In Transit
+                    <span class="text-muted"
+                          style="font-size:0.85rem;font-weight:400;"
+                          th:text="'(' + ${shippedOrders.size()}
+                               + ' orders)'">
+                </span>
+                </h2>
+            </div>
+            <div style="overflow-x:auto;">
+                <table class="admin-table">
+                    <thead>
+                    <tr>
+                        <th>Order #</th>
+                        <th>Buyer</th>
+                        <th>Shipping Address</th>
+                        <th>Total</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="order : ${shippedOrders}">
+                        <td>
+                            <strong th:text="'#'+${order.id}">
+                            </strong>
+                        </td>
+                        <td th:text="${order.buyer.username}">
+                        </td>
+                        <td th:text="${order.shippingAddress}">
+                        </td>
+                        <td style="color:#e94560;font-weight:700;"
+                            th:text="'$'+${#numbers.formatDecimal(
+                                     order.totalAmount,1,2)}">
+                        </td>
+                        <td>
+                            <form th:action="@{/admin/orders/{id}/status(id=${order.id})}"
+                                  method="post">
+                                <input type="hidden"
+                                       name="status"
+                                       value="DELIVERED"/>
+                                <button type="submit"
+                                        class="btn btn-sm btn-success">
+                                    📬 Mark Delivered
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${shippedOrders.isEmpty()}">
+                        <td colspan="5"
+                            class="text-muted text-center"
+                            style="padding:2rem;">
+                            No orders in transit
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+</th:block>
+
+</body>
+</html>

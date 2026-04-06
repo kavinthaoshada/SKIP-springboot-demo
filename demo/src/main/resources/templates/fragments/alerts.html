@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<!-- ═══════════════════════════════════════════════════════════
+     ALERTS FRAGMENT
+     Usage: <div th:replace="~{fragments/alerts :: alerts}"></div>
+     ═══════════════════════════════════════════════════════════ -->
+<div th:fragment="alerts">
+
+    <!-- Success message -->
+    <div class="alert alert-success"
+         th:if="${successMessage}"
+         th:text="${successMessage}">
+    </div>
+
+    <!-- Error message -->
+    <div class="alert alert-danger"
+         th:if="${errorMessage}"
+         th:text="${errorMessage}">
+    </div>
+
+    <!-- Info message -->
+    <div class="alert alert-info"
+         th:if="${infoMessage}"
+         th:text="${infoMessage}">
+    </div>
+
+    <!-- Spring Security login error -->
+    <div class="alert alert-danger"
+         th:if="${param.error}">
+        Invalid username or password. Please try again.
+    </div>
+
+    <!-- Spring Security logout success -->
+    <div class="alert alert-success"
+         th:if="${param.logout}">
+        You have been logged out successfully.
+    </div>
+
+</div>
+
+</html>
