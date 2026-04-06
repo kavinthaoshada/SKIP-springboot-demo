@@ -28,7 +28,6 @@ public class DataSeeder implements ApplicationRunner {
     @Transactional
     public void run(ApplicationArguments args) {
 
-        // Only seed if database is empty
         if (userRepository.count() > 0) {
             log.info("Database already has data — skipping seeder.");
             return;

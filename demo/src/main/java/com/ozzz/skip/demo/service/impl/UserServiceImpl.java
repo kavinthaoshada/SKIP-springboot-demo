@@ -62,8 +62,6 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
     }
 
-    // ── Mapper ────────────────────────────────────────────────────────────
-    // Kept private — only used inside this service
     private UserResponse mapToResponse(User user) {
         return UserResponse.builder()
                 .id(user.getId())

@@ -26,7 +26,6 @@ public class Category {
     @Column(length = 255)
     private String description;
 
-    // Self-referencing for sub-categories (e.g. Electronics > Phones)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
     private Category parent;

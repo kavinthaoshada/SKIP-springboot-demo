@@ -42,12 +42,10 @@ public class OrderServiceImpl implements OrderService {
         User buyer = userRepository.findById(buyerId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", buyerId));
 
-        // Only buyers can place orders
         if (buyer.getRole() != Role.ROLE_BUYER) {
             throw new UnauthorizedException("Only buyers can place orders");
         }
 
-        // Build order shell first
         Order order = Order.builder()
                 .buyer(buyer)
                 .status(OrderStatus.PENDING)
@@ -59,36 +57,30 @@ public class OrderServiceImpl implements OrderService {
 
         BigDecimal totalAmount = BigDecimal.ZERO;
 
-        // Process each item in the order
         for (OrderItemRequest itemRequest : request.getItems()) {
 
             Product product = productRepository.findById(itemRequest.getProductId())
                     .orElseThrow(() -> new ResourceNotFoundException(
                             "Product", "id", itemRequest.getProductId()));
 
-            // Business rule: product must be active
             if (product.getStatus() != ProductStatus.ACTIVE) {
                 throw new BusinessException(
                         "Product is not available: " + product.getName());
             }
 
-            // Business rule: enough stock must exist
             if (product.getStockQuantity() < itemRequest.getQuantity()) {
                 throw new BusinessException(
                         "Insufficient stock for product: " + product.getName() +
                                 ". Available: " + product.getStockQuantity());
             }
 
-            // Deduct stock
             product.setStockQuantity(product.getStockQuantity() - itemRequest.getQuantity());
 
-            // Auto mark as sold out if stock hits zero
             if (product.getStockQuantity() == 0) {
                 product.setStatus(ProductStatus.SOLD_OUT);
             }
             productRepository.save(product);
 
-            // Build order item — snapshot the price at time of purchase
             BigDecimal unitPrice = product.getPrice();
             OrderItem orderItem = OrderItem.builder()
                     .order(order)
@@ -133,7 +125,6 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order", "id", orderId));
 
-        // Business rule: cannot update a cancelled or delivered order
         if (order.getStatus() == OrderStatus.CANCELLED ||
                 order.getStatus() == OrderStatus.DELIVERED) {
             throw new BusinessException(
@@ -150,13 +141,11 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findByIdAndBuyerId(orderId, buyerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order", "id", orderId));
 
-        // Business rule: only PENDING orders can be cancelled
         if (order.getStatus() != OrderStatus.PENDING) {
             throw new BusinessException(
                     "Only pending orders can be cancelled. Current status: " + order.getStatus());
         }
 
-        // Restore stock for each item
         for (OrderItem item : order.getOrderItems()) {
             Product product = item.getProduct();
             product.setStockQuantity(product.getStockQuantity() + item.getQuantity());
@@ -170,7 +159,6 @@ public class OrderServiceImpl implements OrderService {
         orderRepository.save(order);
     }
 
-    // ── Mappers ────────────────────────────────────────────────────────────
     private OrderResponse mapToResponse(Order order) {
         List<OrderItemResponse> itemResponses = order.getOrderItems()
                 .stream()
