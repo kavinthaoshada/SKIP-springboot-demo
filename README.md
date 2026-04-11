@@ -437,7 +437,7 @@ PostgreSQL offers native JSON column indexing, advanced full-text search, superi
 ### Clone & Build
 
 ```bash
-git clone https://github.com/your-username/skipshop.git
+git clone https://github.com/kavinthaoshada/SKIP-springboot-demo.git
 cd skipshop
 mvn clean install
 ```
