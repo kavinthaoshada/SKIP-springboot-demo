@@ -1,4 +1,4 @@
-# SkipShop — Spring Boot E-Commerce Platform
+# SkipsShop — Spring Boot E-Commerce Platform
 
 > A full-stack, production-grade e-commerce web application built with Spring Boot.  
 > Designed as an educational demonstration of real-world enterprise Spring Boot development.
