@@ -20,7 +20,7 @@
           sizes="180x180"
           th:href="@{/favicon/apple-touch-icon.png}"/>
     
-    <title>Register — SkipShop</title>
+    <title>Register — SkipsShop</title>
     <link rel="stylesheet" th:href="@{/css/main.css}"/>
 </head>
 <body>
@@ -29,13 +29,14 @@
     <div class="auth-card">
 
         <!-- Brand -->
-        <a href="/" class="brand">Skip<span style="color:#1a1a2e">Shop</span></a>
+        <a href="/" class="brand">Skips<span style="color:#1a1a2e">Shop</span></a>
 
         <h2>Create account</h2>
-        <p class="subtitle">Join SkipShop as a buyer or seller</p>
+        <p class="subtitle">Join SkipsShop as a buyer or seller</p>
 
         <!-- Alerts -->
-        <div th:replace="~{fragments/alerts :: alerts}"></div>
+<!--        <div th:replace="~{fragments/alerts :: alerts}"></div>-->
+        <div th:insert="~{fragments/alerts :: alerts}"></div>
 
         <!-- Register Form — posts to REST API via JS below -->
         <form id="registerForm">
@@ -96,8 +97,8 @@
             </div>
 
             <!-- Error shown by JS -->
-            <div id="registerError" class="alert alert-danger"
-                 style="display:none;"></div>
+<!--            <div id="registerError" class="alert alert-danger"-->
+<!--                 style="display:none;"></div>-->
 
             <button type="submit" class="btn btn-primary btn-block">
                 Create Account
@@ -119,8 +120,9 @@
     document.getElementById('registerForm').addEventListener('submit', async function(e) {
         e.preventDefault();
 
-        const errorDiv = document.getElementById('registerError');
-        errorDiv.style.display = 'none';
+        // Remove any previous error
+        const existing = document.getElementById('registerError');
+        if (existing) existing.remove();
 
         const payload = {
             username:    document.getElementById('username').value,
@@ -132,8 +134,17 @@
             phoneNumber: document.getElementById('phoneNumber').value
         };
 
+        function showError(msg) {
+            const div = document.createElement('div');
+            div.id = 'registerError';
+            div.className = 'alert alert-danger';
+            div.textContent = msg;
+            // Insert before the submit button
+            const btn = document.querySelector('#registerForm button[type="submit"]');
+            btn.parentNode.insertBefore(div, btn);
+        }
+
         try {
-            // Step 1: Register via REST API
             const res = await fetch('/api/auth/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -143,15 +154,11 @@
             const data = await res.json();
 
             if (!res.ok) {
-                // Show validation errors or business errors
-                const msg = data.message || 'Registration failed';
-                errorDiv.textContent = msg;
-                errorDiv.style.display = 'block';
+                showError(data.message || 'Registration failed');
                 return;
             }
 
-            // Step 2: Auto-login using Spring Security form login
-            // Build a hidden form and submit it programmatically
+            // Auto-login via Spring Security form POST
             const loginForm = document.createElement('form');
             loginForm.method = 'POST';
             loginForm.action = '/auth/login';
@@ -164,10 +171,7 @@
             passwordInput.name  = 'password';
             passwordInput.value = payload.password;
 
-            // CSRF token required for POST
-            const csrfMeta   = document.querySelector('meta[name="_csrf"]');
-            const csrfHeader = document.querySelector('meta[name="_csrf_header"]');
-
+            const csrfMeta = document.querySelector('meta[name="_csrf"]');
             if (csrfMeta) {
                 const csrfInput = document.createElement('input');
                 csrfInput.type  = 'hidden';
@@ -179,11 +183,10 @@
             loginForm.appendChild(usernameInput);
             loginForm.appendChild(passwordInput);
             document.body.appendChild(loginForm);
-            loginForm.submit(); // auto-login → redirects to homepage
+            loginForm.submit();
 
         } catch (err) {
-            errorDiv.textContent = 'Network error. Please try again.';
-            errorDiv.style.display = 'block';
+            showError('Network error. Please try again.');
         }
     });
 </script>
